@@ -10,6 +10,10 @@ def search(business_type, location):
 
     print(f"Starting search for query: {query}")
 
+    # Extract the suburb/city name from the location (remove ', Australia')
+    suburb_city = location.replace(', Australia', '').strip().lower()
+    print(f"Extracted suburb/city for filtering: {suburb_city}")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context()
@@ -76,8 +80,8 @@ def search(business_type, location):
                     except:
                         company_phone = ""
 
-                    # Filter out companies whose address does not include the location
-                    if location.lower() in address.lower():
+                    # Filter out companies whose address does not include the suburb/city name
+                    if suburb_city in address.lower():
                         obj = {
                             "company_name": company_name,
                             "address": address,
