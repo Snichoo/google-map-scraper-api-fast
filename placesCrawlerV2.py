@@ -19,8 +19,12 @@ def search(query):
             
             print(f"Fetching URL: {url} with pagination: {PAGINATION}")
             
-            page.goto(url, timeout=10000)
-            page.wait_for_timeout(5000)  # Wait for the page to load
+            try:
+                page.goto(url, timeout=30000)
+                page.wait_for_timeout(5000)  # Wait for the page to load
+            except Exception as e:
+                print(f"Error navigating to URL: {e}")
+                break  # Exit the loop if navigation fails
 
             # Extract the data script
             try:
@@ -42,6 +46,10 @@ def search(query):
 
             placesData = data_script["data"][1][0]
             print(f"Places data found: {len(placesData)} records")
+
+            if not placesData:
+                print("No more places data found, stopping pagination")
+                break  # Exit the loop if no data is found
 
             try:
                 for i in range(len(placesData)):
@@ -92,13 +100,11 @@ def search(query):
 
             except TypeError as e:
                 print(f"Error processing placesData: {e}")
-                PAGINATION = 0
-                break
+                break  # Exit the loop if data processing fails
 
             if len(placesData) < 20:
                 print("Less than 20 records found, stopping pagination")
-                PAGINATION = 0
-                break
+                break  # Exit the loop if fewer than 20 records are found
             else:
                 PAGINATION += len(placesData)
                 print(f"Proceeding to next page of results with pagination: {PAGINATION}")
