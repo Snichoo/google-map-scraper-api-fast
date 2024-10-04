@@ -13,13 +13,17 @@ from starlette.concurrency import run_in_threadpool
 
 app = FastAPI()
 
+class SearchRequest(BaseModel):
+    business_type: str
+    location: str
+
 class SearchResult(BaseModel):
     company_name: str
     address: str
     website: str
     company_phone: str
 
-@app.get("/search", response_model=List[SearchResult])
-async def read_search(location: str, business_type: str):
-    results = await run_in_threadpool(search, location, business_type)
+@app.post("/search", response_model=List[SearchResult])
+async def read_search(request: SearchRequest):
+    results = await run_in_threadpool(search, request.business_type, request.location)
     return results
