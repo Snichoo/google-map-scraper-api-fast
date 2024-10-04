@@ -1,6 +1,6 @@
 # placesCrawlerV2.py
 from playwright.sync_api import sync_playwright
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
 import json
 
 def search(location, business_type):
@@ -16,7 +16,9 @@ def search(location, business_type):
         
         while True:
             page = context.new_page()
-            url = 'https://www.google.com/localservices/prolist?hl=en&ssta=1&q=' + query + '&oq=' + query + '&src=2&lci=' + str(PAGINATION)
+            # Properly URL-encode the query parameters
+            encoded_query = quote(query)
+            url = f'https://www.google.com/localservices/prolist?hl=en&ssta=1&q={encoded_query}&oq={encoded_query}&src=2&lci={PAGINATION}'
             print(f"Fetching URL: {url} with pagination: {PAGINATION}")
             
             try:
@@ -71,16 +73,22 @@ def search(location, business_type):
                         print(f"Website data missing for record {i}")
 
                     try:
-                        obj["address"] = unquote(placesData[i][10][8][0][2]).split("&daddr=")[1].replace("+", " ")
-                    except:
-                        print(f"Address data missing or malformed for record {i}")
+                        address_unquoted = unquote(placesData[i][10][8][0][2])
+                        # Extract address after '&daddr=' if present
+                        if '&daddr=' in address_unquoted:
+                            obj["address"] = address_unquoted.split("&daddr=")[1].replace("+", " ")
+                        else:
+                            obj["address"] = address_unquoted.replace("+", " ")
+                    except Exception as e:
+                        print(f"Address data missing or malformed for record {i}: {e}")
+                        continue  # Skip this record if address is missing
 
                     # Filter out companies whose address does not include the location
                     if location.lower() in obj["address"].lower():
                         result.append(obj)
                         print(f"Record {i} processed successfully")
                     else:
-                        print(f"Record {i} address does not contain location '{location}', skipping")
+                        print(f"Record {i} address '{obj['address']}' does not contain location '{location}', skipping")
 
             except TypeError as e:
                 print(f"Error processing placesData: {e}")
