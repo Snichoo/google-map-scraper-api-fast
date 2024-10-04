@@ -1,5 +1,3 @@
-# Dockerfile
-
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
@@ -34,12 +32,15 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory
 WORKDIR /app
 
-# Copy and install the dependencies
+# Copy the requirements file
 COPY requirements.txt .
+
+# Install python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright and download browsers
-RUN pip install playwright && playwright install --with-deps chromium
+# Install Playwright and browsers
+RUN pip install playwright && \
+    playwright install --with-deps chromium
 
 # Copy the rest of the application code
 COPY . .
