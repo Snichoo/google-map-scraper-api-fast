@@ -35,12 +35,15 @@ WORKDIR /app
 # Copy the requirements file
 COPY requirements.txt .
 
+# Set environment variable to ensure browsers are installed in the project directory
+ENV PLAYWRIGHT_BROWSERS_PATH=0
+
 # Install python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Playwright and browsers
 RUN pip install playwright && \
-    playwright install --with-deps chromium
+    playwright install chromium
 
 # Copy the rest of the application code
 COPY . .
