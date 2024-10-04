@@ -1,8 +1,9 @@
 # Dockerfile
 
+# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Install system dependencies required by Playwright
+# Install system dependencies required by Playwright and Chromium
 RUN apt-get update && apt-get install -y \
     libnss3 \
     libatk1.0-0 \
@@ -33,18 +34,18 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory
 WORKDIR /app
 
-# Copy and install dependencies
+# Copy and install the dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers
-RUN playwright install --with-deps chromium
+# Install Playwright and download browsers
+RUN pip install playwright && playwright install --with-deps chromium
 
-# Copy the application code
+# Copy the rest of the application code
 COPY . .
 
-# Expose the port
-EXPOSE 8000
+# Expose the port the app will run on
+EXPOSE 8080
 
-# Start the application
+# Command to start the app using Uvicorn on port 8080
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
