@@ -1,12 +1,12 @@
 # placesCrawlerV2.py
 from playwright.sync_api import sync_playwright
-from urllib.parse import unquote, quote
+from urllib.parse import unquote
 import json
 
-def search(location, business_type):
-    query = f"{business_type} in {location}"
+def search(business_type, location):
     result = []
     PAGINATION = 0
+    query = f"{business_type} in {location}"
 
     print(f"Starting search for query: {query}")
 
@@ -16,9 +16,8 @@ def search(location, business_type):
         
         while True:
             page = context.new_page()
-            # Properly URL-encode the query parameters
-            encoded_query = quote(query)
-            url = f'https://www.google.com/localservices/prolist?hl=en&ssta=1&q={encoded_query}&oq={encoded_query}&src=2&lci={PAGINATION}'
+            url = 'https://www.google.com/localservices/prolist?hl=en&ssta=1&q='+query+'&oq='+query+'&src=2&lci='+str(PAGINATION)
+            
             print(f"Fetching URL: {url} with pagination: {PAGINATION}")
             
             try:
@@ -37,9 +36,9 @@ def search(location, business_type):
                 break
             
             try:
-                data_script = data_script.replace("AF_initDataCallback(", "").replace("'", "").replace("\n", "")[:-2]
-                data_script = data_script.replace("{key:", "{\"key\":").replace(", hash:", ", \"hash\":").replace(", data:", ", \"data\":").replace(", sideChannel:", ", \"sideChannel\":")
-                data_script = data_script.replace("\"key\": ds:", "\"key\": \"ds: ").replace(", \"hash\":", "\",\"hash\":")
+                data_script = data_script.replace("AF_initDataCallback(","").replace("'","").replace("\n","")[:-2]
+                data_script = data_script.replace("{key:","{\"key\":").replace(", hash:",", \"hash\":").replace(", data:",", \"data\":").replace(", sideChannel:",", \"sideChannel\":")
+                data_script = data_script.replace("\"key\": ds:","\"key\": \"ds: ").replace(", \"hash\":","\",\"hash\":")
                 data_script = json.loads(data_script)
                 print("Data script successfully processed and loaded into JSON")
             except Exception as e:
@@ -55,40 +54,40 @@ def search(location, business_type):
 
             try:
                 for i in range(len(placesData)):
-                    obj = {
-                        "company_name": placesData[i][10][5][1],
-                        "address": "",
-                        "website": "",
-                        "company_phone": ""
-                    }
+                    # Extract required fields
+                    try:
+                        company_name = placesData[i][10][5][1]
+                    except:
+                        company_name = ""
 
                     try:
-                        obj["company_phone"] = placesData[i][10][0][0][1][0][0]
-                    except TypeError:
-                        print(f"Phone number data missing for record {i}")
+                        address_raw = placesData[i][10][8][0][2]
+                        address = unquote(address_raw).split("&daddr=")[1].replace("+"," ")
+                    except:
+                        address = ""
 
                     try:
-                        obj["website"] = placesData[i][10][1][0]
-                    except TypeError:
-                        print(f"Website data missing for record {i}")
+                        website = placesData[i][10][1][0]
+                    except:
+                        website = ""
 
                     try:
-                        address_unquoted = unquote(placesData[i][10][8][0][2])
-                        # Extract address after '&daddr=' if present
-                        if '&daddr=' in address_unquoted:
-                            obj["address"] = address_unquoted.split("&daddr=")[1].replace("+", " ")
-                        else:
-                            obj["address"] = address_unquoted.replace("+", " ")
-                    except Exception as e:
-                        print(f"Address data missing or malformed for record {i}: {e}")
-                        continue  # Skip this record if address is missing
+                        company_phone = placesData[i][10][0][0][1][1][0]
+                    except:
+                        company_phone = ""
 
                     # Filter out companies whose address does not include the location
-                    if location.lower() in obj["address"].lower():
+                    if location.lower() in address.lower():
+                        obj = {
+                            "company_name": company_name,
+                            "address": address,
+                            "website": website,
+                            "company_phone": company_phone
+                        }
                         result.append(obj)
-                        print(f"Record {i} processed successfully")
+                        print(f"Record {i} processed and added to results")
                     else:
-                        print(f"Record {i} address '{obj['address']}' does not contain location '{location}', skipping")
+                        print(f"Record {i} excluded due to address mismatch")
 
             except TypeError as e:
                 print(f"Error processing placesData: {e}")
