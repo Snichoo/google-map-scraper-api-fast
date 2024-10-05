@@ -2,7 +2,7 @@
 
 This project is a FastAPI-based Google Maps Business Scraper that allows you to search for business information (such as name, address, website, and phone number) within a specified location. It ensures that the results are accurate by filtering out businesses outside of the specified location. The API is ready to be deployed on platforms like Render.com, Google Cloud Platform (GCP), or AWS.
 
-### Best Google map scraper for accuracy and it actually finds places to scrape unlike other ones which often can't find places and what it doesn’t return the actual places that are there when you actually use Google Maps.
+### The most accurate Google Maps scraper, designed to find and scrape locations reliably—unlike others that often miss places or fail to return the actual locations that appear when using Google Maps directly.
 
 ## Main Features 🚀
 - **Accurate Results**: Scrapes only the places in your specified location and filters out unwanted results.
