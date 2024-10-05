@@ -1,12 +1,15 @@
-# Google Maps Scraper API 🗺️
+# Google Maps Business Scraper API
 
-This project provides a **fast**, **reliable**, and **accurate** scraper for extracting business data from Google Maps. Unlike many scrapers, it **consistently finds and returns real places** within your specified location without straying beyond the boundaries. 
+This project is a FastAPI-based Google Maps Business Scraper that allows you to search for business information (such as name, address, website, and phone number) within a specified location. It ensures that the results are accurate by filtering out businesses outside of the specified location. The API is ready to be deployed on platforms like Render.com, Google Cloud Platform (GCP), or AWS.
 
-### Main Features 🚀
+### Best Google map scraper for accuracy and it actually finds places to scrape unlike other ones which often can't find places and what it doesn’t return the actual places that are there when you actually use Google Maps.
+
+## Main Features 🚀
 - **Accurate Results**: Scrapes only the places in your specified location and filters out unwanted results.
 - **Fast & Efficient**: Handles pagination and multiple results with speed.
 - **Ready for Deployment**: Can be easily deployed on platforms like **Render.com**, **Google Cloud Platform (GCP)**, or **AWS**.
 - **Error Handling**: Robust against navigation issues and ensures data extraction even in challenging scenarios.
+
 
 ### How to Use 💡
 
@@ -53,9 +56,9 @@ This project provides a **fast**, **reliable**, and **accurate** scraper for ext
   }
 ]
 ```
-**Limitation ⚠️**
+#### Limitation ⚠️
 For cities with populations over 70,000, break the location into suburbs to avoid missing places.
-**Deployment 🌍**
+#### Deployment 🌍
 This scraper can be easily deployed to Render.com, GCP, or AWS:
 ```bash
 Docker: The provided Dockerfile ensures all dependencies are included, making deployment quick and hassle-free.
