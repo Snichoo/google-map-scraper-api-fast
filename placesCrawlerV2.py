@@ -34,27 +34,6 @@ def search(business_type, location):
             # Extract the data script
             try:
                 data_script = page.eval_on_selector('#yDmH0d > script:nth-child(12)', 'element => element.textContent')
-                # Print the entire data_script for inspection
-                print(f"Data script content: {data_script}")
-
-                # Update how you access 'placesData' based on the new structure
-                try:
-                    placesData = data_script_json["data"][1][0]
-                except (KeyError, IndexError, TypeError) as e:
-                    print(f"Failed to extract 'placesData': {e}")
-                    break  # Or handle the error appropriately
-
-                # After extracting data_script
-                if not data_script:
-                    print("Data script is empty or None")
-                    break  # Exit the loop or handle accordingly
-
-                # When parsing data_script
-                try:
-                    data_script_json = json.loads(data_script)
-                except json.JSONDecodeError as e:
-                    print(f"JSON decoding failed: {e}")
-                    break
                 print("Data script extracted")
             except Exception as e:
                 print(f"Error extracting data script: {e}")
