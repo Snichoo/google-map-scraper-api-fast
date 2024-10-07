@@ -4,7 +4,6 @@ from playwright.async_api import async_playwright
 from urllib.parse import unquote
 import json
 import os
-
 # Singleton variables for the browser instance
 playwright = None
 browser = None
@@ -29,7 +28,7 @@ async def close_browser():
 MAX_CONTEXTS = int(os.getenv('MAX_CONTEXTS', '5'))
 context_semaphore = asyncio.Semaphore(MAX_CONTEXTS)
 
-async def search(business_type, location):
+async def search(business_type, location, lead_count=None):
     result = []
     query = f"{business_type} in {location}"
 
@@ -49,7 +48,7 @@ async def search(business_type, location):
                 browser = await get_browser()
                 context = await browser.new_context()
                 try:
-                    result = await perform_search(context, query, suburb_city)
+                    result = await perform_search(context, query, suburb_city, lead_count)
                 finally:
                     await context.close()
 
@@ -68,8 +67,9 @@ async def search(business_type, location):
     print(f"Search completed with {len(result)} results")
     return result
 
-async def perform_search(context, query, suburb_city):
+async def perform_search(context, query, suburb_city, lead_count=None):
     result = []
+    total_leads_collected = 0
     PAGINATION = 0
     while True:
         page = await context.new_page()
@@ -160,7 +160,10 @@ async def perform_search(context, query, suburb_city):
                         "company_phone": company_phone
                     }
                     result.append(obj)
-                    print(f"Record {i} processed and added to results")
+                    total_leads_collected += 1
+                if lead_count and total_leads_collected >= lead_count:
+                    print("Lead count limit reached, stopping pagination")
+                    break
                 else:
                     print(f"Record {i} excluded due to address mismatch")
 
