@@ -1,4 +1,4 @@
-# main.py stable.
+# main.py stable work.
 import sys
 import asyncio
 
