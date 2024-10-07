@@ -161,11 +161,14 @@ async def perform_search(context, query, suburb_city, lead_count=None):
                     }
                     result.append(obj)
                     total_leads_collected += 1
-                if lead_count and total_leads_collected >= lead_count:
-                    print("Lead count limit reached, stopping pagination")
-                    break
+
+                    if lead_count and total_leads_collected >= lead_count:
+                        print("Lead count limit reached, stopping pagination")
+                        await page.close()
+                        return result  # Exit the function as we've reached the lead count
                 else:
                     print(f"Record {i} excluded due to address mismatch")
+
 
         except Exception as e:
             print(f"Error processing placesData: {e}")
@@ -174,6 +177,11 @@ async def perform_search(context, query, suburb_city, lead_count=None):
 
         await page.close()
 
+        if lead_count and total_leads_collected >= lead_count:
+            print("Lead count limit reached, stopping pagination")
+            break  # Break out of the while loop
+
+        # Proceed to next page if lead count not reached
         if len(placesData) < 20:
             print("Less than 20 records found, stopping pagination")
             break  # Exit the loop if fewer than 20 records are found

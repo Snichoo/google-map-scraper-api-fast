@@ -21,6 +21,17 @@ class SearchResult(BaseModel):
     website: str
     company_phone: str
 
+# Define the lifespan function to manage startup and shutdown tasks
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic can go here
+    yield
+    # Shutdown logic
+    await close_browser()
+
+# Instantiate the FastAPI app with the lifespan context
+app = FastAPI(lifespan=lifespan)
+
 @app.post("/search", response_model=List[SearchResult])
 async def read_search(request: SearchRequest):
     async with search_semaphore:
