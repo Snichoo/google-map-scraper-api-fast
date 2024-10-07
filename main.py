@@ -1,18 +1,16 @@
-# main.py stable.
-import sys
+# main.py
+import os
 import asyncio
-
-if sys.platform.startswith('win'):
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-
-from fastapi import FastAPI, HTTPException, Depends, Header, status
+from fastapi import FastAPI
 from typing import List
 from pydantic import BaseModel
-from placesCrawlerV2 import search
-from starlette.concurrency import run_in_threadpool
-import os
+from placesCrawlerV2 import search, close_browser
 
 app = FastAPI()
+
+# Read SEARCH_CONCURRENCY_LIMIT from environment variable or default to 10
+SEARCH_CONCURRENCY_LIMIT = int(os.getenv('SEARCH_CONCURRENCY_LIMIT', '10'))
+search_semaphore = asyncio.Semaphore(SEARCH_CONCURRENCY_LIMIT)
 
 class SearchRequest(BaseModel):
     business_type: str
@@ -24,20 +22,12 @@ class SearchResult(BaseModel):
     website: str
     company_phone: str
 
-async def verify_api_key(x_api_key: str = Header(...)):
-    api_key_env = os.environ.get('API_KEY')
-    if api_key_env is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="API Key not configured on the server."
-        )
-    if x_api_key != api_key_env:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API Key"
-        )
-
-@app.post("/search", response_model=List[SearchResult], dependencies=[Depends(verify_api_key)])
+@app.post("/search", response_model=List[SearchResult])
 async def read_search(request: SearchRequest):
-    results = await run_in_threadpool(search, request.business_type, request.location)
+    async with search_semaphore:
+        results = await search(request.business_type, request.location)
     return results
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_browser()
