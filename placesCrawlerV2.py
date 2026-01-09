@@ -1,4 +1,4 @@
-# placesCrawlerV2.py
+﻿# placesCrawlerV2.py
 import asyncio
 from playwright.async_api import async_playwright
 from urllib.parse import unquote, quote_plus

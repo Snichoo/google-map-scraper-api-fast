@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     libxi6 \
     libxtst6 \
-    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -47,8 +46,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Playwright and browsers
 RUN pip install playwright && \
-    playwright install chromium && \
-    playwright install-deps chromium
+    playwright install chromium
 
 # Copy the rest of the application code
 COPY . .
